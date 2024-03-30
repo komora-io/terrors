@@ -1,4 +1,4 @@
-use paring::OneOf;
+use terrors::OneOf;
 
 #[derive(Debug)]
 struct NotEnoughMemory;
@@ -22,6 +22,7 @@ fn retry() -> Result<(), OneOf<(NotEnoughMemory, RetriesExhausted)>> {
             Err(allocation_oneof) => {
                 // TODO make broadening work
                 // return Err(OneOf::new(allocation))
+                let allocation_oneof: OneOf<(NotEnoughMemory,)> = allocation_oneof;
                 let allocation = allocation_oneof.narrow::<NotEnoughMemory, (), _>().unwrap();
 
                 return Err(OneOf::new(allocation));
