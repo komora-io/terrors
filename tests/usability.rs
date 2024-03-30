@@ -36,7 +36,7 @@ fn retry() {
         Err(OneOf::new(RetriesExhausted))
     }
 
-    dbg!(inner());
+    let _ = dbg!(inner());
 }
 
 fn does_stuff() -> Result<(), OneOf<(NotEnoughMemory, Timeout)>> {

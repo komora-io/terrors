@@ -2,7 +2,7 @@ use std::any::{Any, TypeId};
 use std::marker::PhantomData;
 
 use crate::type_fuckery::{Contains, Here};
-use crate::typeset::TypeSet;
+use crate::type_set::TypeSet;
 
 #[derive(Debug)]
 pub struct OneOf<E: TypeSet> {
