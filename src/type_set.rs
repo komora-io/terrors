@@ -127,29 +127,6 @@ where
 {
 }
 
-/*
-trait Sculptor<Target, Indices> {
-    type Remainder;
-}
-
-impl<Source> Sculptor<End, End> for Source {
-    // Since Our Target is End, we just return the Source
-    type Remainder = Source;
-}
-
-impl<THead, TTail, SHead, STail, IndexHead, IndexTail>
-    Sculptor<Cons<THead, TTail>, Cons<IndexHead, IndexTail>> for Cons<SHead, STail>
-where
-    Cons<SHead, STail>: Plucker<THead, IndexHead>,
-    <Cons<SHead, STail> as Plucker<THead, IndexHead>>::Remainder: Sculptor<TTail, IndexTail>,
-{
-    type Remainder = <<Cons<SHead, STail> as Plucker<THead, IndexHead>>::Remainder as Sculptor<
-        TTail,
-        IndexTail,
-    >>::Remainder;
-}
-*/
-
 fn _superset_test() {
     fn is_superset<S1, S2, Index>()
     where
