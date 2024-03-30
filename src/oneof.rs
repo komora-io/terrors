@@ -35,10 +35,15 @@ where
         Remainder: TypeSet,
         Target: 'static,
     {
+        let looking_for_tid = TypeId::of::<Target>();
         let actual_tid = self.value.type_id();
-        if TypeId::of::<Target>() == actual_tid {
+        if self.value.is::<Target>() {
             Ok(*self.value.downcast::<Target>().unwrap())
         } else {
+            println!(
+                "failed to get narrowing type {:?}, currently have {:?}",
+                looking_for_tid, actual_tid,
+            );
             Err(OneOf {
                 value: self.value,
                 _pd: PhantomData,
