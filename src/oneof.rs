@@ -1,8 +1,7 @@
 use std::any::{Any, TypeId};
 use std::marker::PhantomData;
 
-use crate::narrow::Narrow;
-use crate::type_fuckery::{Contains, Here};
+use crate::type_fuckery::{Contains, Here, Narrow};
 use crate::type_set::TypeSet;
 
 #[derive(Debug)]
@@ -35,7 +34,7 @@ where
         // TODO enforce Remainder being subset of E, as currently it's unconstrained
         Remainder: TypeSet,
         Target: 'static,
-        //E: Narrow<Target, Remainder>,
+        E: Narrow<Target, Index, Remainder = Remainder>,
     {
         let looking_for_tid = TypeId::of::<Target>();
         let actual_tid = self.value.type_id();

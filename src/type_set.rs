@@ -1,4 +1,4 @@
-use super::type_fuckery::{Cons, End, Here, There};
+use super::type_fuckery::{Cons, End};
 
 pub(crate) trait TypeSet {
     type TList;

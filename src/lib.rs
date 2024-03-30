@@ -1,4 +1,3 @@
-mod narrow;
 mod oneof;
 mod type_fuckery;
 mod type_set;
