@@ -1,7 +1,7 @@
 use std::any::Any;
 use std::marker::PhantomData;
 
-use crate::type_set::{Contains, Narrow, TypeSet};
+use crate::type_set::{Contains, Narrow, SupersetOf, TypeSet};
 
 #[derive(Debug)]
 pub struct OneOf<E: TypeSet> {
@@ -11,7 +11,7 @@ pub struct OneOf<E: TypeSet> {
 
 impl<T> From<T> for OneOf<(T,)>
 where
-    T: Any,
+    T: 'static,
 {
     fn from(t: T) -> OneOf<(T,)> {
         OneOf::new(t)
@@ -22,6 +22,17 @@ impl<E> OneOf<E>
 where
     E: TypeSet,
 {
+    pub fn new<T, Index>(t: T) -> OneOf<E>
+    where
+        T: Any,
+        E::TList: Contains<T, Index>,
+    {
+        OneOf {
+            value: Box::new(t),
+            _pd: PhantomData,
+        }
+    }
+
     pub fn narrow<Target, Remainder, Index>(self) -> Result<Target, OneOf<Remainder>>
     where
         E::TList: Contains<Target, Index>,
@@ -39,13 +50,13 @@ where
         }
     }
 
-    pub fn new<T, Index>(t: T) -> OneOf<E>
+    pub fn broaden<Other, Index>(self) -> OneOf<Other>
     where
-        T: Any,
-        E::TList: Contains<T, Index>,
+        Other: TypeSet,
+        Other::TList: SupersetOf<E::TList, Index>,
     {
         OneOf {
-            value: Box::new(t),
+            value: self.value,
             _pd: PhantomData,
         }
     }

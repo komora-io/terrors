@@ -43,7 +43,7 @@ fn does_stuff() -> Result<(), OneOf<(NotEnoughMemory, Timeout)>> {
     // TODO Try impl after superset type work
     let _allocation = match allocates() {
         Ok(a) => a,
-        Err(e) => return Err(OneOf::new(e)),
+        Err(e) => return Err(e.broaden()),
     };
 
     // TODO Try impl after superset type work
@@ -57,6 +57,7 @@ fn does_stuff() -> Result<(), OneOf<(NotEnoughMemory, Timeout)>> {
 
 fn allocates() -> Result<(), OneOf<(NotEnoughMemory,)>> {
     let result: Result<(), NotEnoughMemory> = Err(NotEnoughMemory);
+
     result?;
 
     Ok(())

@@ -77,7 +77,7 @@ impl<T, Index, Head, Tail> Contains<T, There<Index>> for Cons<Head, Tail> where
 /* ------------------------- Narrow ----------------------- */
 
 /// A trait for pulling a specific type out of a TList at compile-time
-/// and getting its Remainder.
+/// and having access to the other types as the Remainder.
 pub trait Narrow<Target, Index> {
     type Remainder;
 }
@@ -108,29 +108,63 @@ fn _narrow_test() {
     can_narrow::<T0, String, Cons<u32, End>, _>();
 }
 
-/* ------------------------- SubsetOf ----------------------- */
+/* ------------------------- SupersetOf ----------------------- */
 
 /// When all types in a TList are present in a second TList
-pub trait SubsetOf<Other, Index> {}
+pub trait SupersetOf<Other, Index> {}
 
-//impl<Other, Head> SubsetOf<Other, Here> for Cons<Head, End> where Other: Contains<Head, _> {}
+/// Base case
+impl<T> SupersetOf<End, End> for T {}
 
-impl<Other, Index, Head, Tail> SubsetOf<Other, There<Index>> for Cons<Head, Tail>
+/// Recursive case - more complex because we have to reason about the Index itself as a
+/// heterogenous list.
+impl<SubHead, SubTail, SuperHead, SuperTail, HeadIndex, TailIndex>
+    SupersetOf<Cons<SubHead, SubTail>, Cons<HeadIndex, TailIndex>> for Cons<SuperHead, SuperTail>
 where
-    Other: Contains<Head, Index>,
-    Other: Contains<Tail, Index>,
+    Cons<SuperHead, SuperTail>: Narrow<SubHead, HeadIndex>,
+    <Cons<SuperHead, SuperTail> as Narrow<SubHead, HeadIndex>>::Remainder:
+        SupersetOf<SubTail, TailIndex>,
 {
 }
 
-fn _subset_test() {
-    fn is_subset<S1, S2, Index>()
+/*
+trait Sculptor<Target, Indices> {
+    type Remainder;
+}
+
+impl<Source> Sculptor<End, End> for Source {
+    // Since Our Target is End, we just return the Source
+    type Remainder = Source;
+}
+
+impl<THead, TTail, SHead, STail, IndexHead, IndexTail>
+    Sculptor<Cons<THead, TTail>, Cons<IndexHead, IndexTail>> for Cons<SHead, STail>
+where
+    Cons<SHead, STail>: Plucker<THead, IndexHead>,
+    <Cons<SHead, STail> as Plucker<THead, IndexHead>>::Remainder: Sculptor<TTail, IndexTail>,
+{
+    type Remainder = <<Cons<SHead, STail> as Plucker<THead, IndexHead>>::Remainder as Sculptor<
+        TTail,
+        IndexTail,
+    >>::Remainder;
+}
+*/
+
+fn _superset_test() {
+    fn is_superset<S1, S2, Index>()
     where
-        S1: SubsetOf<S2, Index>,
+        S1: SupersetOf<S2, Index>,
     {
     }
 
-    type T0 = <(u32, String) as TypeSet>::TList;
-    type T1 = <(u32, String, i32) as TypeSet>::TList;
+    type T0 = <(u32,) as TypeSet>::TList;
+    type T1 = <(u32, String) as TypeSet>::TList;
+    type T2 = <(u32, String, i32) as TypeSet>::TList;
 
-    // TODO is_subset::<T0, T1, _>();
+    is_superset::<T0, T0, _>();
+    is_superset::<T1, T1, _>();
+    is_superset::<T2, T2, _>();
+    is_superset::<T1, T0, _>();
+    is_superset::<T2, T0, _>();
+    is_superset::<T2, T1, _>();
 }
