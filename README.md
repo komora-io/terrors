@@ -1,11 +1,45 @@
 # terrors
 
-yet another unusable error handling library
+This crate is built around `OneOf`, which functions as
+a form of anonymous enum that can be narrowed in ways
+that may be familiar for users of TypeScript etc...
 
-but this one has some fancy type-level stuff going on,
-so you won't be able to understand why it broke, but at least
-this happens at compile time, and you can have better
-bounds on what an error type actually is.
+The cool thing about it is that it functions like a
+type-level heterogenous set, where there's only one
+actual value among the different possibilities.
+
+Rather than having a giant ball of mud enum that
+you never handle individual concerns from, the idea
+of this is that you want to have a minimized set of
+actual error types that may thread through the stack.
+
+This is being considered as a possible replacement
+for the nested Result style of error handling that
+has been popular for fine grained error handling in
+correctness critical projects. The nice thing about
+this type-level set of possibilities is that any
+specific type can be peeled off while narrowing
+the rest of the types if the narrowing fails.
+Both narrowing and broadening are based on type-level set checking.
+
+So far this is just a one-day weekend project but
+as I fight off the urge to pass out I imagine it
+might be useful going forward, after a few likely
+bugs in the type-level magic are sanded down and
+other ergonomic improvements are made.
+
+# Principles
+* no macros
+* error handling does not mean putting every error in a global ball of mud enum
+  that never actually gets handled. it means giving users the tools to reason
+  about what might actually be a concern at different levels of the stack,
+  and avoid having local concerns propagate outside of the area of responsibility.
+* don't impose too much ergonomic hardship on the caller that is responsible
+  for handling errors and doing their own narrowing as they can take care of
+  local concerns, or broaden the error as they punt it up the stack in
+  cases where the caller may need to handle a variety of concerns. we'll
+  see if this is actually all that ergonomic or not. it feels better than
+  nested Results, but we'll see.
 
 # Examples
 
