@@ -1,0 +1,11 @@
+[package]
+name = "terrors"
+version = "0.1.0"
+edition = "2021"
+authors = ["Tyler Neely <tylerneely@gmail.com>"]
+documentation = "https://docs.rs/terrors/"
+description = "type-level error set narrowing"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/komora-io/terrors"
+categories = ["error-handling"]
+readme = "README.md"
