@@ -1,6 +1,31 @@
-use super::type_fuckery::{Cons, End};
+//! Type-level set inclusion and difference, inspired by frunk's approach: https://archive.is/YwDMX
 
-pub(crate) trait TypeSet {
+use std::marker::PhantomData;
+
+/* ------------------------- Helpers ----------------------- */
+
+/// The final element of a type-level Cons list.
+pub enum End {}
+
+/// A type that signals to the compiler that we focus non-recursively
+/// on a particular element, while importantly differentiating it from
+/// `There` which allows the compiler to understand that there are no
+/// conflicting trait implementations that overlap.
+pub enum Here {}
+
+/// The complement to `Here`, this allows the compiler to reason about
+/// the recursive case of trait resolution in contrast to the `Here`
+/// base case. We have to keep wrapping `Index` in a way that is similar
+/// in structure to `Cons` because it prevents the compiler from
+/// detecting a conflicting implementation in the recursive case.
+pub struct There<Index>(PhantomData<Index>);
+
+/// A compile-time list of types, similar to other basic functional list structures.
+pub struct Cons<Head, Tail>(PhantomData<Head>, Tail);
+
+/* ------------------------- TypeSet implemented for tuples ----------------------- */
+
+pub trait TypeSet {
     type TList;
 }
 
@@ -30,4 +55,82 @@ impl<A, B, C, D, E> TypeSet for (A, B, C, D, E) {
 
 impl<A, B, C, D, E, F> TypeSet for (A, B, C, D, E, F) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, End>>>>>>;
+}
+
+/* ------------------------- Contains ----------------------- */
+
+/// A trait that assists with compile-time type set inclusion testing.
+/// The `Index` parameter is either `Here` or `There` depending on
+/// whether the trait implementation is a base case or the recursive
+/// case.
+pub trait Contains<T, Index> {}
+
+/// Base case implementation for when the Cons Head is T.
+impl<T, Tail> Contains<T, Here> for Cons<T, Tail> {}
+
+/// Recursive case for when the Cons Tail contains T.
+impl<T, Index, Head, Tail> Contains<T, There<Index>> for Cons<Head, Tail> where
+    Tail: Contains<T, Index>
+{
+}
+
+/* ------------------------- Narrow ----------------------- */
+
+/// A trait for pulling a specific type out of a TList at compile-time
+/// and getting its Remainder.
+pub trait Narrow<Target, Index> {
+    type Remainder;
+}
+
+/// Base case where the search Target is in the Head of the TList.
+impl<Target, Tail> Narrow<Target, Here> for Cons<Target, Tail> {
+    type Remainder = Tail;
+}
+
+/// Recursive case where the search Target is in the Tail of the TList.
+impl<Head, Tail, Target, Index> Narrow<Target, There<Index>> for Cons<Head, Tail>
+where
+    Tail: Narrow<Target, Index>,
+{
+    type Remainder = Cons<Head, <Tail as Narrow<Target, Index>>::Remainder>;
+}
+
+fn _narrow_test() {
+    fn can_narrow<Types, Target, Remainder, Index>()
+    where
+        Types: Narrow<Target, Index, Remainder = Remainder>,
+    {
+    }
+
+    type T0 = <(u32, String) as TypeSet>::TList;
+
+    can_narrow::<T0, u32, _, _>();
+    can_narrow::<T0, String, Cons<u32, End>, _>();
+}
+
+/* ------------------------- SubsetOf ----------------------- */
+
+/// When all types in a TList are present in a second TList
+pub trait SubsetOf<Other, Index> {}
+
+//impl<Other, Head> SubsetOf<Other, Here> for Cons<Head, End> where Other: Contains<Head, _> {}
+
+impl<Other, Index, Head, Tail> SubsetOf<Other, There<Index>> for Cons<Head, Tail>
+where
+    Other: Contains<Head, Index>,
+    Other: Contains<Tail, Index>,
+{
+}
+
+fn _subset_test() {
+    fn is_subset<S1, S2, Index>()
+    where
+        S1: SubsetOf<S2, Index>,
+    {
+    }
+
+    type T0 = <(u32, String) as TypeSet>::TList;
+    type T1 = <(u32, String, i32) as TypeSet>::TList;
+
+    // TODO is_subset::<T0, T1, _>();
 }

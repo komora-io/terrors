@@ -1,8 +1,7 @@
-use std::any::{Any, TypeId};
+use std::any::Any;
 use std::marker::PhantomData;
 
-use crate::type_fuckery::{Contains, Here, Narrow};
-use crate::type_set::TypeSet;
+use crate::type_set::{Contains, Narrow, TypeSet};
 
 #[derive(Debug)]
 pub struct OneOf<E: TypeSet> {
@@ -10,19 +9,14 @@ pub struct OneOf<E: TypeSet> {
     _pd: PhantomData<E>,
 }
 
-/*
-// TODO need to convince compiler that E != T for this to compile
-impl<T, E> From<OneOf<T>> for OneOf<E>
+impl<T> From<T> for OneOf<(T,)>
 where
     T: Any,
-    E: TypeSet,
-    E::TList: Contains<T, Here>,
 {
     fn from(t: T) -> OneOf<(T,)> {
         OneOf::new(t)
     }
 }
-*/
 
 impl<E> OneOf<E>
 where
@@ -31,20 +25,13 @@ where
     pub fn narrow<Target, Remainder, Index>(self) -> Result<Target, OneOf<Remainder>>
     where
         E::TList: Contains<Target, Index>,
-        // TODO enforce Remainder being subset of E, as currently it's unconstrained
         Remainder: TypeSet,
         Target: 'static,
-        E: Narrow<Target, Index, Remainder = Remainder>,
+        E::TList: Narrow<Target, Index, Remainder = Remainder::TList>,
     {
-        let looking_for_tid = TypeId::of::<Target>();
-        let actual_tid = self.value.type_id();
         if self.value.is::<Target>() {
             Ok(*self.value.downcast::<Target>().unwrap())
         } else {
-            println!(
-                "failed to get narrowing type {:?}, currently have {:?}",
-                looking_for_tid, actual_tid,
-            );
             Err(OneOf {
                 value: self.value,
                 _pd: PhantomData,

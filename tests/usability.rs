@@ -55,8 +55,11 @@ fn does_stuff() -> Result<(), OneOf<(NotEnoughMemory, Timeout)>> {
     Ok(())
 }
 
-fn allocates() -> Result<(), NotEnoughMemory> {
-    Err(NotEnoughMemory)
+fn allocates() -> Result<(), OneOf<(NotEnoughMemory,)>> {
+    let result: Result<(), NotEnoughMemory> = Err(NotEnoughMemory);
+    result?;
+
+    Ok(())
 }
 
 fn chats() -> Result<(), Timeout> {
