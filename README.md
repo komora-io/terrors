@@ -171,3 +171,45 @@ The nice thing about this type-level set of possibilities
 is that any specific type can be peeled off while narrowing
 the rest of the types if the narrowing fails. Both narrowing
 and broadening are based on compile-time error type set checking.
+
+### The Trade-Off
+
+Type-level programming is something that I have tried hard to avoid
+for most of my career due to confusing error messages resulting
+from compilation errors. These complex type checking failures
+produce errors that are challenging to reason about, and can often
+take several minutes to understand.
+
+I have tried hard to avoid exposing users of `terrors` to too many
+of the sharp edges in the underlying type machinery, but it is likely
+that if the source and destination type sets do not satisfy the `SupersetOf`
+trait in the right direction depending on whether `narrow` or
+`broaden` is being called, that the error will not be particularly
+pleasant to read. Just know that errors pretty much always mean
+that the superset relationship does not hold as required.
+
+Going forward, I believe most of the required traits can be implemented
+in ways that expose users to errors that look more like `(A, B) does not
+implement SupersetOf<(C, D), _>` instead of `Cons<A, Cons<B, End>> does
+not implement SupersetOf<Cons<C, Cons<D, End>>>` by leaning into the
+bidirectional type mapping that exists between the heterogenous type
+set `Cons` chains and more human-friendly type tuples.
+
+### Special Thanks
+
+Much of the fancy type-level logic for reasoning about sets of error types
+was directly inspired by [frunk](https://docs.rs/frunk/latest/frunk/).
+I had been wondering for years about the feasibility of a data structure
+like `OneOf`, and had often assumed it was impossible, until I finally
+had an extended weekend to give it a deep dive. After many false starts,
+I finally came across [an article](https://archive.is/YwDMX) written by
+[lloydmeta](https://github.com/lloydmeta) (the author of frunk) about how
+frunk handles several related concerns in the context of a heterogenous
+list structure. Despite having used Rust for over 10 years, that article
+taught me a huge amount about how the language's type system can be
+used in interesting ways that addressed very practical needs. In particular,
+the general perspective in that blog post about how you can implement
+traits in a recursive way that is familiar from other functional languages
+was the missing primitive for working with Rust that I had not realized
+was possible for my first decade with the language. Thank you very
+much for creating frunk and telling the world about how you did it!
