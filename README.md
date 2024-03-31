@@ -43,7 +43,7 @@ other ergonomic improvements are made.
 
 # Examples
 
-```
+``` rust
 use terrors::OneOf;
 
 let one_of_3: OneOf<(String, u32, Vec<u8>)> = OneOf::new(5);
@@ -56,7 +56,7 @@ assert_eq!(5, narrowed_res.unwrap());
 
 OneOf can also be broadened to a superset, checked at compile-time.
 
-```
+``` rust
 use terrors::OneOf;
 
 struct Timeout;
