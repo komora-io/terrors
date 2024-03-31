@@ -1,12 +1,24 @@
 use std::any::Any;
 use std::marker::PhantomData;
+use std::ops::Deref;
 
-use crate::type_set::{Contains, Narrow, SupersetOf, TypeSet};
+use crate::type_set::{Cons, Contains, End, Narrow, SupersetOf, TypeSet};
 
 #[derive(Debug)]
 pub struct OneOf<E: TypeSet> {
     value: Box<dyn Any>,
     _pd: PhantomData<E>,
+}
+
+impl<T> Deref for OneOf<(T,)>
+where
+    T: 'static,
+{
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        self.value.downcast_ref::<T>().unwrap()
+    }
 }
 
 impl<T> From<T> for OneOf<(T,)>
@@ -59,5 +71,13 @@ where
             value: self.value,
             _pd: PhantomData,
         }
+    }
+
+    pub fn take<Target>(self) -> Target
+    where
+        Target: 'static,
+        E: TypeSet<TList = Cons<Target, End>>,
+    {
+        *self.value.downcast::<Target>().unwrap()
     }
 }

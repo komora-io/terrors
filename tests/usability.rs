@@ -70,14 +70,11 @@ fn chats() -> Result<(), Timeout> {
 #[test]
 fn smoke() {
     let o_1: OneOf<(u32, String)> = OneOf::new(5_u32);
-    let narrowed_1 = o_1.narrow::<u32, (String,), _>();
+    let _narrowed_1: u32 = o_1.narrow::<u32, (String,), _>().unwrap();
 
     let o_2: OneOf<(String, u32)> = OneOf::new(5_u32);
-    let narrowed_2 = o_2.narrow::<u32, (String,), _>();
+    let _narrowed_2: u32 = o_2.narrow::<u32, (String,), _>().unwrap();
 
     let o_3: OneOf<(String, u32)> = OneOf::new("5".to_string());
-    let narrowed_3 = o_3.narrow::<u32, (String,), _>();
-
-    let o_4: OneOf<(String, u32)> = OneOf::new(5_u32);
-    let narrowed_3 = o_4.narrow::<u32, (String,), _>();
+    let _narrowed_3: OneOf<(String,)> = o_3.narrow::<u32, (String,), _>().unwrap_err();
 }
