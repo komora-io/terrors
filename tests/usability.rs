@@ -19,14 +19,14 @@ fn retry() {
                 return Ok(());
             };
 
-            match err.narrow::<Timeout, (NotEnoughMemory,), _>() {
+            match err.narrow::<Timeout, _>() {
                 Ok(_timeout) => continue,
                 Err(allocation_oneof) => {
                     println!("didn't get Timeout, now trying to get NotEnoughMemory");
                     // TODO make broadening work
                     // return Err(OneOf::new(allocation))
                     let allocation_oneof: OneOf<(NotEnoughMemory,)> = allocation_oneof;
-                    let allocation = allocation_oneof.narrow::<NotEnoughMemory, (), _>().unwrap();
+                    let allocation = allocation_oneof.narrow::<NotEnoughMemory, _>().unwrap();
 
                     return Err(OneOf::new(allocation));
                 }
@@ -70,11 +70,11 @@ fn chats() -> Result<(), Timeout> {
 #[test]
 fn smoke() {
     let o_1: OneOf<(u32, String)> = OneOf::new(5_u32);
-    let _narrowed_1: u32 = o_1.narrow::<u32, (String,), _>().unwrap();
+    let _narrowed_1: u32 = o_1.narrow::<u32, _>().unwrap();
 
     let o_2: OneOf<(String, u32)> = OneOf::new(5_u32);
-    let _narrowed_2: u32 = o_2.narrow::<u32, (String,), _>().unwrap();
+    let _narrowed_2: u32 = o_2.narrow::<u32, _>().unwrap();
 
     let o_3: OneOf<(String, u32)> = OneOf::new("5".to_string());
-    let _narrowed_3: OneOf<(String,)> = o_3.narrow::<u32, (String,), _>().unwrap_err();
+    let _narrowed_3: OneOf<(String,)> = o_3.narrow::<u32, _>().unwrap_err();
 }

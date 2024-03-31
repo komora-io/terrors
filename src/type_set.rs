@@ -26,7 +26,7 @@ pub struct Cons<Head, Tail>(PhantomData<Head>, Tail);
 /* ------------------------- TypeSet implemented for tuples ----------------------- */
 
 pub trait TypeSet {
-    type TList;
+    type TList: TupleForm;
 }
 
 impl TypeSet for () {
@@ -57,6 +57,40 @@ impl<A, B, C, D, E, F> TypeSet for (A, B, C, D, E, F) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, End>>>>>>;
 }
 
+/* ------------------------- TupleForm implemented for TypeSet ----------------------- */
+
+pub trait TupleForm {
+    type Tuple: TypeSet;
+}
+
+impl TupleForm for End {
+    type Tuple = ();
+}
+
+impl<A> TupleForm for Cons<A, End> {
+    type Tuple = (A,);
+}
+
+impl<A, B> TupleForm for Cons<A, Cons<B, End>> {
+    type Tuple = (A, B);
+}
+
+impl<A, B, C> TupleForm for Cons<A, Cons<B, Cons<C, End>>> {
+    type Tuple = (A, B, C);
+}
+
+impl<A, B, C, D> TupleForm for Cons<A, Cons<B, Cons<C, Cons<D, End>>>> {
+    type Tuple = (A, B, C, D);
+}
+
+impl<A, B, C, D, E> TupleForm for Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, End>>>>> {
+    type Tuple = (A, B, C, D, E);
+}
+
+impl<A, B, C, D, E, F> TupleForm for Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, End>>>>>> {
+    type Tuple = (A, B, C, D, E, F);
+}
+
 /* ------------------------- Contains ----------------------- */
 
 /// A trait that assists with compile-time type set inclusion testing.
@@ -78,12 +112,16 @@ impl<T, Index, Head, Tail> Contains<T, There<Index>> for Cons<Head, Tail> where
 
 /// A trait for pulling a specific type out of a TList at compile-time
 /// and having access to the other types as the Remainder.
-pub trait Narrow<Target, Index> {
-    type Remainder;
+pub trait Narrow<Target, Index>: TupleForm {
+    type Remainder: TupleForm;
 }
 
 /// Base case where the search Target is in the Head of the TList.
-impl<Target, Tail> Narrow<Target, Here> for Cons<Target, Tail> {
+impl<Target, Tail> Narrow<Target, Here> for Cons<Target, Tail>
+where
+    Tail: TupleForm,
+    Cons<Target, Tail>: TupleForm,
+{
     type Remainder = Tail;
 }
 
@@ -91,6 +129,9 @@ impl<Target, Tail> Narrow<Target, Here> for Cons<Target, Tail> {
 impl<Head, Tail, Target, Index> Narrow<Target, There<Index>> for Cons<Head, Tail>
 where
     Tail: Narrow<Target, Index>,
+    Tail: TupleForm,
+    Cons<Head, Tail>: TupleForm,
+    Cons<Head, <Tail as Narrow<Target, Index>>::Remainder>: TupleForm,
 {
     type Remainder = Cons<Head, <Tail as Narrow<Target, Index>>::Remainder>;
 }

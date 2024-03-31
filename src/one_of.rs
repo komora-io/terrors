@@ -2,7 +2,7 @@ use std::any::Any;
 use std::marker::PhantomData;
 use std::ops::Deref;
 
-use crate::type_set::{Cons, Contains, End, Narrow, SupersetOf, TypeSet};
+use crate::type_set::{Cons, Contains, End, Narrow, SupersetOf, TupleForm, TypeSet};
 
 #[derive(Debug)]
 pub struct OneOf<E: TypeSet> {
@@ -45,12 +45,12 @@ where
         }
     }
 
-    pub fn narrow<Target, Remainder, Index>(self) -> Result<Target, OneOf<Remainder>>
+    pub fn narrow<Target, Index>(
+        self,
+    ) -> Result<Target, OneOf<<<E::TList as Narrow<Target, Index>>::Remainder as TupleForm>::Tuple>>
     where
-        E::TList: Contains<Target, Index>,
-        Remainder: TypeSet,
         Target: 'static,
-        E::TList: Narrow<Target, Index, Remainder = Remainder::TList>,
+        E::TList: Narrow<Target, Index>,
     {
         if self.value.is::<Target>() {
             Ok(*self.value.downcast::<Target>().unwrap())

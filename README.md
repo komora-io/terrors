@@ -89,7 +89,7 @@ fn retry() -> Result<(), OneOf<(AllocationFailure, RetriesExhausted)>> {
 
         // keep retrying if we have a Timeout,
         // but punt allocation issues to caller.
-        match err.narrow::<Timeout, (AllocationFailure,), _>() {
+        match err.narrow::<Timeout, _>() {
             Ok(_timeout) => {},
             Err(one_of_others) => return Err(one_of_others.broaden()),
         }

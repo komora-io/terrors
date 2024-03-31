@@ -87,7 +87,7 @@
 //!
 //!         // keep retrying if we have a Timeout,
 //!         // but punt allocation issues to caller.
-//!         match err.narrow::<Timeout, (AllocationFailure,), _>() {
+//!         match err.narrow::<Timeout, _>() {
 //!             Ok(_timeout) => {},
 //!             Err(one_of_others) => return Err(one_of_others.broaden()),
 //!         }
@@ -96,6 +96,10 @@
 //!     Err(OneOf::new(RetriesExhausted))
 //! }
 //! ```
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;
 
 mod one_of;
 mod type_set;
