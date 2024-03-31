@@ -135,13 +135,18 @@ fn _superset_test() {
     }
 
     type T0 = <(u32,) as TypeSet>::TList;
-    type T1 = <(u32, String) as TypeSet>::TList;
-    type T2 = <(u32, String, i32) as TypeSet>::TList;
+    type T1A = <(u32, String) as TypeSet>::TList;
+    type T1B = <(String, u32) as TypeSet>::TList;
+    type T2 = <(String, i32, u32) as TypeSet>::TList;
 
     is_superset::<T0, T0, _>();
-    is_superset::<T1, T1, _>();
+    is_superset::<T1A, T1A, _>();
+    is_superset::<T1A, T1B, _>();
+    is_superset::<T1B, T1A, _>();
     is_superset::<T2, T2, _>();
-    is_superset::<T1, T0, _>();
+    is_superset::<T1A, T0, _>();
+    is_superset::<T1B, T0, _>();
     is_superset::<T2, T0, _>();
-    is_superset::<T2, T1, _>();
+    is_superset::<T2, T1A, _>();
+    is_superset::<T2, T1B, _>();
 }
