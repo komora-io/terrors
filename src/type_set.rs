@@ -57,6 +57,19 @@ impl<A, B, C, D, E, F> TypeSet for (A, B, C, D, E, F) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, End>>>>>>;
 }
 
+impl<A, B, C, D, E, F, G> TypeSet for (A, B, C, D, E, F, G) {
+    type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, End>>>>>>>;
+}
+
+impl<A, B, C, D, E, F, G, H> TypeSet for (A, B, C, D, E, F, G, H) {
+    type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, End>>>>>>>>;
+}
+
+impl<A, B, C, D, E, F, G, H, I> TypeSet for (A, B, C, D, E, F, G, H, I) {
+    type TList =
+        Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, Cons<I, End>>>>>>>>>;
+}
+
 /* ------------------------- TupleForm implemented for TypeSet ----------------------- */
 
 pub trait TupleForm {
@@ -89,6 +102,24 @@ impl<A, B, C, D, E> TupleForm for Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, End>>>
 
 impl<A, B, C, D, E, F> TupleForm for Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, End>>>>>> {
     type Tuple = (A, B, C, D, E, F);
+}
+
+impl<A, B, C, D, E, F, G> TupleForm
+    for Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, End>>>>>>>
+{
+    type Tuple = (A, B, C, D, E, F, G);
+}
+
+impl<A, B, C, D, E, F, G, H> TupleForm
+    for Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, End>>>>>>>>
+{
+    type Tuple = (A, B, C, D, E, F, G, H);
+}
+
+impl<A, B, C, D, E, F, G, H, I> TupleForm
+    for Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, Cons<I, End>>>>>>>>>
+{
+    type Tuple = (A, B, C, D, E, F, G, H, I);
 }
 
 /* ------------------------- Contains ----------------------- */
@@ -179,6 +210,7 @@ fn _superset_test() {
     type T1A = <(u32, String) as TypeSet>::TList;
     type T1B = <(String, u32) as TypeSet>::TList;
     type T2 = <(String, i32, u32) as TypeSet>::TList;
+    type T3 = <(Vec<u8>, Vec<i8>, u32, f32, String, f64, i32) as TypeSet>::TList;
 
     is_superset::<T0, T0, _>();
     is_superset::<T1A, T1A, _>();
@@ -190,4 +222,8 @@ fn _superset_test() {
     is_superset::<T2, T0, _>();
     is_superset::<T2, T1A, _>();
     is_superset::<T2, T1B, _>();
+    is_superset::<T3, T1A, _>();
+    is_superset::<T3, T1B, _>();
+    is_superset::<T3, T0, _>();
+    is_superset::<T3, T2, _>();
 }
