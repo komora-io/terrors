@@ -6,17 +6,6 @@ and then if the set of errors is not within those local
 concerns, propagating the remainder to a caller. The
 caller should not receive the local errors of the callee.
 
-```rust
-use terrors::OneOf;
-
-let one_of_3: OneOf<(String, u32, Vec<u8>)> = OneOf::new(5);
-
-let narrowed_res: Result<u32, OneOf<(String, Vec<u8>)>> =
-    one_of_3.narrow();
-
-assert_eq!(5, narrowed_res.unwrap());
-```
-
 # Principles
 
 * Error types should be precise.
