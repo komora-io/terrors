@@ -4,6 +4,7 @@ use std::ops::Deref;
 
 use crate::type_set::{Cons, Contains, End, Narrow, SupersetOf, TupleForm, TypeSet};
 
+/// `OneOf` is similar to anonymous unions / enums in languages that support type narrowing.
 #[derive(Debug)]
 pub struct OneOf<E: TypeSet> {
     value: Box<dyn Any>,
