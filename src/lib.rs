@@ -95,7 +95,7 @@
 //! software patterns that tend to correspond to system failures.
 //! This is one of my favorites:
 //!
-//! ```
+//! ```no_compile
 //! almost all (92%) of the catastrophic system failures
 //! are the result of incorrect handling of non-fatal errors
 //! explicitly signaled in software.
