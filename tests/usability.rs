@@ -77,4 +77,16 @@ fn smoke() {
 
     let o_3: OneOf<(String, u32)> = OneOf::new("5".to_string());
     let _narrowed_3: OneOf<(String,)> = o_3.narrow::<u32, _>().unwrap_err();
+
+    let o_4: OneOf<(String, u32)> = OneOf::new("5".to_string());
+
+    let _: String = o_4.narrow().unwrap();
+
+    let o_5: OneOf<(String, u32)> = OneOf::new("5".to_string());
+
+    if let Ok(_) = o_5.narrow::<String, _>() {
+        // expected
+    } else {
+        panic!(":(");
+    }
 }
