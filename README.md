@@ -74,6 +74,31 @@ fn retry() -> Result<(), OneOf<(AllocationFailure, RetriesExhausted)>> {
 }
 ```
 
+`OneOf` also implements `Debug`, `Display`, and/or `std::error::Error` if all types in the type set do as well:
+
+```rust
+use std::error::Error;
+use std::io;
+use terrors::OneOf;
+
+let o_1: OneOf<(u32, String)> = OneOf::new(5_u32);
+
+// Debug is implemented if all types in the type set implement Debug
+dbg!(&o_1);
+
+// Display is implemented if all types in the type set implement Display
+println!("{}", o_1);
+
+type E = io::Error;
+let e = io::Error::new(io::ErrorKind::Other, "wuaaaaahhhzzaaaaaaaa");
+
+let o_2: OneOf<(E,)> = OneOf::new(e);
+
+// std::error::Error is implemented if all types in the type set implement it
+dbg!(o_2.description());
+```
+
+
 ### Motivation
 
 The paper [Simple Testing Can Prevent Most Critical Failures: An Analysis of Production Failures in Distributed Data-intensive Systems](https://www.eecg.toronto.edu/~yuan/papers/failure_analysis_osdi14.pdf)

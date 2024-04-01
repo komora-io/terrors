@@ -5,6 +5,7 @@ use std::marker::PhantomData;
 /* ------------------------- Helpers ----------------------- */
 
 /// The final element of a type-level Cons list.
+#[derive(Debug)]
 pub enum End {}
 
 /// A type that signals to the compiler that we focus non-recursively
@@ -21,7 +22,117 @@ pub enum Here {}
 pub struct There<Index>(PhantomData<Index>);
 
 /// A compile-time list of types, similar to other basic functional list structures.
+#[derive(Debug)]
 pub struct Cons<Head, Tail>(PhantomData<Head>, Tail);
+
+/* ------------------------- std::error support ----------------------- */
+use std::any::Any;
+use std::error::Error;
+use std::fmt;
+
+impl<Head, Tail> fmt::Display for Cons<Head, Tail>
+where
+    Head: fmt::Display,
+    Tail: fmt::Display,
+{
+    fn fmt(&self, _: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // TODO handle this reasonably, or make Cons impossible for users to construct.
+        Ok(())
+    }
+}
+
+impl fmt::Display for End {
+    fn fmt(&self, _: &mut fmt::Formatter<'_>) -> fmt::Result {
+        unreachable!("Display::fmt called for an End, which is not constructible.")
+    }
+}
+
+impl<Head, Tail> Error for Cons<Head, Tail>
+where
+    Head: Error,
+    Tail: Error,
+{
+}
+
+// fold requirements
+// * args: Box<dyn Any>
+// * params: Cons<Head, Tail>
+// * algo: when Box<dyn Any>::is<Head>(), downcast_ref
+
+pub trait DebugFold {
+    fn debug_fold(any: &Box<dyn Any>, formatter: &mut fmt::Formatter<'_>) -> fmt::Result;
+}
+
+impl DebugFold for End {
+    fn debug_fold(_: &Box<dyn Any>, _: &mut fmt::Formatter<'_>) -> fmt::Result {
+        unreachable!("debug_fold called on End");
+    }
+}
+
+impl<Head, Tail> DebugFold for Cons<Head, Tail>
+where
+    Cons<Head, Tail>: fmt::Debug,
+    Head: 'static + fmt::Debug,
+    Tail: DebugFold,
+{
+    fn debug_fold(any: &Box<dyn Any>, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(head_ref) = any.downcast_ref::<Head>() {
+            head_ref.fmt(formatter)
+        } else {
+            Tail::debug_fold(any, formatter)
+        }
+    }
+}
+
+pub trait DisplayFold {
+    fn display_fold(any: &Box<dyn Any>, formatter: &mut fmt::Formatter<'_>) -> fmt::Result;
+}
+
+impl DisplayFold for End {
+    fn display_fold(_: &Box<dyn Any>, _: &mut fmt::Formatter<'_>) -> fmt::Result {
+        unreachable!("display_fold called on End");
+    }
+}
+
+impl<Head, Tail> DisplayFold for Cons<Head, Tail>
+where
+    Cons<Head, Tail>: fmt::Display,
+    Head: 'static + fmt::Display,
+    Tail: DisplayFold,
+{
+    fn display_fold(any: &Box<dyn Any>, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(head_ref) = any.downcast_ref::<Head>() {
+            head_ref.fmt(formatter)
+        } else {
+            Tail::display_fold(any, formatter)
+        }
+    }
+}
+
+pub trait ErrorFold {
+    fn source_fold(any: &Box<dyn Any>) -> Option<&(dyn Error + 'static)>;
+}
+
+impl ErrorFold for End {
+    fn source_fold(_: &Box<dyn Any>) -> Option<&(dyn Error + 'static)> {
+        unreachable!("source_fold called on End");
+    }
+}
+
+impl<Head, Tail> ErrorFold for Cons<Head, Tail>
+where
+    Cons<Head, Tail>: Error,
+    Head: 'static + Error,
+    Tail: ErrorFold,
+{
+    fn source_fold(any: &Box<dyn Any>) -> Option<&(dyn Error + 'static)> {
+        if let Some(head_ref) = any.downcast_ref::<Head>() {
+            head_ref.source()
+        } else {
+            Tail::source_fold(any)
+        }
+    }
+}
 
 /* ------------------------- TypeSet implemented for tuples ----------------------- */
 

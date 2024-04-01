@@ -21,8 +21,6 @@ fn retry() {
                 Ok(_timeout) => continue,
                 Err(allocation_oneof) => {
                     println!("didn't get Timeout, now trying to get NotEnoughMemory");
-                    // TODO make broadening work
-                    // return Err(OneOf::new(allocation))
                     let allocation_oneof: OneOf<(NotEnoughMemory,)> = allocation_oneof;
                     let allocation = allocation_oneof.narrow::<NotEnoughMemory, _>().unwrap();
 
@@ -87,4 +85,26 @@ fn smoke() {
     } else {
         panic!(":(");
     }
+}
+
+#[test]
+fn debug() {
+    use std::error::Error;
+    use std::io;
+
+    let o_1: OneOf<(u32, String)> = OneOf::new(5_u32);
+
+    // Debug is implemented if all types in the type set implement Debug
+    dbg!(&o_1);
+
+    // Display is implemented if all types in the type set implement Display
+    println!("{}", o_1);
+
+    type E = io::Error;
+    let e = io::Error::new(io::ErrorKind::Other, "wuaaaaahhhzzaaaaaaaa");
+
+    let o_2: OneOf<(E,)> = OneOf::new(e);
+
+    // std::error::Error is implemented if all types in the type set implement it
+    dbg!(o_2.description());
 }

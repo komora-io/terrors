@@ -1,11 +1,14 @@
 use std::any::Any;
+use std::error::Error;
+use std::fmt;
 use std::marker::PhantomData;
 use std::ops::Deref;
 
-use crate::type_set::{Cons, Contains, End, Narrow, SupersetOf, TupleForm, TypeSet};
+use crate::type_set::{
+    Cons, Contains, DebugFold, DisplayFold, End, ErrorFold, Narrow, SupersetOf, TupleForm, TypeSet,
+};
 
 /// `OneOf` is similar to anonymous unions / enums in languages that support type narrowing.
-#[derive(Debug)]
 pub struct OneOf<E: TypeSet> {
     value: Box<dyn Any>,
     _pd: PhantomData<E>,
@@ -28,6 +31,36 @@ where
 {
     fn from(t: T) -> OneOf<(T,)> {
         OneOf::new(t)
+    }
+}
+
+impl<E> fmt::Debug for OneOf<E>
+where
+    E: TypeSet,
+    E::TList: fmt::Debug + DebugFold,
+{
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        E::TList::debug_fold(&self.value, formatter)
+    }
+}
+
+impl<E> fmt::Display for OneOf<E>
+where
+    E: TypeSet,
+    E::TList: fmt::Display + DisplayFold,
+{
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        E::TList::display_fold(&self.value, formatter)
+    }
+}
+
+impl<E> Error for OneOf<E>
+where
+    E: TypeSet,
+    E::TList: Error + DebugFold + DisplayFold + ErrorFold,
+{
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        E::TList::source_fold(&self.value)
     }
 }
 
