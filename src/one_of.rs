@@ -8,9 +8,11 @@ use crate::type_set::{
     Cons, Contains, DebugFold, DisplayFold, End, ErrorFold, Narrow, SupersetOf, TupleForm, TypeSet,
 };
 
+/* ------------------------- OneOf ----------------------- */
+
 /// `OneOf` is similar to anonymous unions / enums in languages that support type narrowing.
 pub struct OneOf<E: TypeSet> {
-    value: Box<dyn Any>,
+    pub(crate) value: Box<dyn Any>,
     _pd: PhantomData<E>,
 }
 
@@ -113,5 +115,12 @@ where
         E: TypeSet<TList = Cons<Target, End>>,
     {
         *self.value.downcast::<Target>().unwrap()
+    }
+
+    pub fn to_enum(self) -> E::Enum
+    where
+        E::Enum: From<Self>,
+    {
+        E::Enum::from(self)
     }
 }

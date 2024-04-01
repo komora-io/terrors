@@ -106,5 +106,24 @@ fn debug() {
     let o_2: OneOf<(E,)> = OneOf::new(e);
 
     // std::error::Error is implemented if all types in the type set implement it
-    dbg!(o_2.description());
+    dbg!(o_2.source());
+
+    let o_3: OneOf<(u32, String)> = OneOf::new("hey".to_string());
+    dbg!(o_3);
+}
+
+#[test]
+fn multi_match() {
+    use terrors::E2;
+
+    let o_1: OneOf<(u32, String)> = OneOf::new(5_u32);
+
+    match o_1.to_enum() {
+        E2::A(u) => {
+            println!("handling {u}: u32")
+        }
+        E2::B(s) => {
+            println!("handling {s}: String")
+        }
+    }
 }

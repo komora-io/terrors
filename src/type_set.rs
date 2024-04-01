@@ -138,47 +138,58 @@ where
 
 pub trait TypeSet {
     type TList: TupleForm;
+    type Enum;
 }
 
 impl TypeSet for () {
     type TList = End;
+    type Enum = E0;
 }
 
 impl<A> TypeSet for (A,) {
     type TList = Cons<A, End>;
+    type Enum = E1<A>;
 }
 
 impl<A, B> TypeSet for (A, B) {
     type TList = Cons<A, Cons<B, End>>;
+    type Enum = E2<A, B>;
 }
 
 impl<A, B, C> TypeSet for (A, B, C) {
     type TList = Cons<A, Cons<B, Cons<C, End>>>;
+    type Enum = E3<A, B, C>;
 }
 
 impl<A, B, C, D> TypeSet for (A, B, C, D) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, End>>>>;
+    type Enum = E4<A, B, C, D>;
 }
 
 impl<A, B, C, D, E> TypeSet for (A, B, C, D, E) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, End>>>>>;
+    type Enum = E5<A, B, C, D, E>;
 }
 
 impl<A, B, C, D, E, F> TypeSet for (A, B, C, D, E, F) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, End>>>>>>;
+    type Enum = E6<A, B, C, D, E, F>;
 }
 
 impl<A, B, C, D, E, F, G> TypeSet for (A, B, C, D, E, F, G) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, End>>>>>>>;
+    type Enum = E7<A, B, C, D, E, F, G>;
 }
 
 impl<A, B, C, D, E, F, G, H> TypeSet for (A, B, C, D, E, F, G, H) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, End>>>>>>>>;
+    type Enum = E8<A, B, C, D, E, F, G, H>;
 }
 
 impl<A, B, C, D, E, F, G, H, I> TypeSet for (A, B, C, D, E, F, G, H, I) {
     type TList =
         Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, Cons<I, End>>>>>>>>>;
+    type Enum = E9<A, B, C, D, E, F, G, H, I>;
 }
 
 /* ------------------------- TupleForm implemented for TypeSet ----------------------- */
@@ -231,6 +242,78 @@ impl<A, B, C, D, E, F, G, H, I> TupleForm
     for Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, Cons<I, End>>>>>>>>>
 {
     type Tuple = (A, B, C, D, E, F, G, H, I);
+}
+
+/* ------------------------- Lifted ----------------------- */
+
+pub enum E0 {}
+pub enum E1<A> {
+    A(A),
+}
+impl<A> From<A> for E1<A> {
+    fn from(a: A) -> E1<A> {
+        E1::A(a)
+    }
+}
+pub enum E2<A, B> {
+    A(A),
+    B(B),
+}
+pub enum E3<A, B, C> {
+    A(A),
+    B(B),
+    C(C),
+}
+pub enum E4<A, B, C, D> {
+    A(A),
+    B(B),
+    C(C),
+    D(D),
+}
+pub enum E5<A, B, C, D, E> {
+    A(A),
+    B(B),
+    C(C),
+    D(D),
+    E(E),
+}
+pub enum E6<A, B, C, D, E, F> {
+    A(A),
+    B(B),
+    C(C),
+    D(D),
+    E(E),
+    F(F),
+}
+pub enum E7<A, B, C, D, E, F, G> {
+    A(A),
+    B(B),
+    C(C),
+    D(D),
+    E(E),
+    F(F),
+    G(G),
+}
+pub enum E8<A, B, C, D, E, F, G, H> {
+    A(A),
+    B(B),
+    C(C),
+    D(D),
+    E(E),
+    F(F),
+    G(G),
+    H(H),
+}
+pub enum E9<A, B, C, D, E, F, G, H, I> {
+    A(A),
+    B(B),
+    C(C),
+    D(D),
+    E(E),
+    F(F),
+    G(G),
+    H(H),
+    I(I),
 }
 
 /* ------------------------- Contains ----------------------- */
