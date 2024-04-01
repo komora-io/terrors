@@ -13,9 +13,7 @@ struct RetriesExhausted;
 fn retry() {
     fn inner() -> Result<(), OneOf<(NotEnoughMemory, RetriesExhausted)>> {
         for _ in 0..3 {
-            let err = if let Err(e) = does_stuff() {
-                e
-            } else {
+            let Err(err) = does_stuff() else {
                 return Ok(());
             };
 
