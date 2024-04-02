@@ -123,4 +123,11 @@ where
     {
         E::Enum::from(self)
     }
+
+    pub fn as_enum<'a>(&'a self) -> E::EnumRef<'a>
+    where
+        E::EnumRef<'a>: From<&'a Self>,
+    {
+        E::EnumRef::from(&self)
+    }
 }

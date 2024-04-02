@@ -98,19 +98,28 @@ let o_2: OneOf<(E,)> = OneOf::new(e);
 dbg!(o_2.description());
 ```
 
-OneOf can also be turned into an enum form:
+OneOf can also be turned into an owned or referenced enum form:
 
 ```rust
 use terrors::{OneOf, E2};
 
 let o_1: OneOf<(u32, String)> = OneOf::new(5_u32);
 
-match o_1.to_enum() {
+match o_1.as_enum() {
     E2::A(u) => {
-        println!("handling {u}: u32")
+        println!("handling owned {u}: u32")
     }
     E2::B(s) => {
-        println!("handling {s}: String")
+        println!("handling owned {s}: String")
+    }
+}
+
+match o_1.to_enum() {
+    E2::A(u) => {
+        println!("handling owned {u}: u32")
+    }
+    E2::B(s) => {
+        println!("handling owned {s}: String")
     }
 }
 ```

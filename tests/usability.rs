@@ -118,6 +118,15 @@ fn multi_match() {
 
     let o_1: OneOf<(u32, String)> = OneOf::new(5_u32);
 
+    match o_1.as_enum() {
+        E2::A(u) => {
+            println!("handling {u}: u32")
+        }
+        E2::B(s) => {
+            println!("handling {s}: String")
+        }
+    }
+
     match o_1.to_enum() {
         E2::A(u) => {
             println!("handling {u}: u32")

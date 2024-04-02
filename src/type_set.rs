@@ -139,57 +139,70 @@ where
 pub trait TypeSet {
     type TList: TupleForm;
     type Enum;
+    type EnumRef<'a>
+    where
+        Self: 'a;
 }
 
 impl TypeSet for () {
     type TList = End;
     type Enum = E0;
+    type EnumRef<'a> = E0 where Self: 'a;
 }
 
 impl<A> TypeSet for (A,) {
     type TList = Cons<A, End>;
     type Enum = E1<A>;
+    type EnumRef<'a> = E1<&'a A> where Self: 'a;
 }
 
 impl<A, B> TypeSet for (A, B) {
     type TList = Cons<A, Cons<B, End>>;
     type Enum = E2<A, B>;
+    type EnumRef<'a> = E2<&'a A, &'a B> where Self: 'a;
 }
 
 impl<A, B, C> TypeSet for (A, B, C) {
     type TList = Cons<A, Cons<B, Cons<C, End>>>;
     type Enum = E3<A, B, C>;
+    type EnumRef<'a> = E3<&'a A, &'a B, &'a C> where Self: 'a;
 }
 
 impl<A, B, C, D> TypeSet for (A, B, C, D) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, End>>>>;
     type Enum = E4<A, B, C, D>;
+    type EnumRef<'a> = E4<&'a A, &'a B, &'a C, &'a D> where Self: 'a;
 }
 
 impl<A, B, C, D, E> TypeSet for (A, B, C, D, E) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, End>>>>>;
     type Enum = E5<A, B, C, D, E>;
+    type EnumRef<'a> = E5<&'a A, &'a B, &'a C, &'a D, &'a E> where Self: 'a;
 }
 
 impl<A, B, C, D, E, F> TypeSet for (A, B, C, D, E, F) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, End>>>>>>;
     type Enum = E6<A, B, C, D, E, F>;
+    type EnumRef<'a> = E6<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F> where Self: 'a;
 }
 
 impl<A, B, C, D, E, F, G> TypeSet for (A, B, C, D, E, F, G) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, End>>>>>>>;
     type Enum = E7<A, B, C, D, E, F, G>;
+    type EnumRef<'a> = E7<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F, &'a G> where Self: 'a;
 }
 
 impl<A, B, C, D, E, F, G, H> TypeSet for (A, B, C, D, E, F, G, H) {
     type TList = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, End>>>>>>>>;
     type Enum = E8<A, B, C, D, E, F, G, H>;
+    type EnumRef<'a> = E8<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F, &'a G, &'a H> where Self: 'a;
 }
 
 impl<A, B, C, D, E, F, G, H, I> TypeSet for (A, B, C, D, E, F, G, H, I) {
     type TList =
         Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, Cons<I, End>>>>>>>>>;
     type Enum = E9<A, B, C, D, E, F, G, H, I>;
+    type EnumRef<'a> = E9<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F, &'a G, &'a H, &'a I> where Self: 'a;
 }
 
 /* ------------------------- TupleForm implemented for TypeSet ----------------------- */
