@@ -74,7 +74,7 @@ fn retry() -> Result<(), OneOf<(AllocationFailure, RetriesExhausted)>> {
 }
 ```
 
-`OneOf` also implements `Debug`, `Display`, and/or `std::error::Error` if all types in the type set do as well:
+`OneOf` also implements `Clone`, `Debug`, `Display`, and/or `std::error::Error` if all types in the type set do as well:
 
 ```rust
 use std::error::Error;
@@ -88,6 +88,8 @@ dbg!(&o_1);
 
 // Display is implemented if all types in the type set implement Display
 println!("{}", o_1);
+
+let cloned = o_1.clone();
 
 type E = io::Error;
 let e = io::Error::new(io::ErrorKind::Other, "wuaaaaahhhzzaaaaaaaa");
@@ -107,10 +109,10 @@ let o_1: OneOf<(u32, String)> = OneOf::new(5_u32);
 
 match o_1.as_enum() {
     E2::A(u) => {
-        println!("handling owned {u}: u32")
+        println!("handling reference {u}: u32")
     }
     E2::B(s) => {
-        println!("handling owned {s}: String")
+        println!("handling reference {s}: String")
     }
 }
 

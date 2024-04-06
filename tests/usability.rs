@@ -79,12 +79,17 @@ fn smoke() {
     let _: String = o_4.narrow().unwrap();
 
     let o_5: OneOf<(String, u32)> = OneOf::new("5".to_string());
+    o_5.narrow::<String, _>().unwrap();
 
-    if let Ok(_) = o_5.narrow::<String, _>() {
-        // expected
-    } else {
-        panic!(":(");
-    }
+    let o_6: OneOf<(String, u32)> = OneOf::new("5".to_string());
+    let o_7: OneOf<(u32, String)> = o_6.broaden();
+    let o_8: OneOf<(String, u32)> = o_7.subset().unwrap();
+    let _: OneOf<(u32, String)> = o_8.subset().unwrap();
+
+    let o_9: OneOf<(u8, u16, u32)> = OneOf::new(3_u32);
+    let _: Result<OneOf<(u16,)>, OneOf<(u8, u32)>> = o_9.subset();
+    let o_10: OneOf<(u8, u16, u32)> = OneOf::new(3_u32);
+    let _: Result<u16, OneOf<(u8, u32)>> = o_10.narrow();
 }
 
 #[test]
@@ -133,6 +138,29 @@ fn multi_match() {
         }
         E2::B(s) => {
             println!("handling {s}: String")
+        }
+    }
+}
+
+#[test]
+fn multi_narrow() {
+    use terrors::E2;
+
+    struct Timeout {}
+    struct Backoff {}
+
+    let o_1: OneOf<(u8, u16, u32, u64, u128)> = OneOf::new(5_u32);
+
+    let _narrow_res: Result<OneOf<(u8, u128)>, OneOf<(u16, u32, u64)>> = o_1.subset();
+
+    let o_2: OneOf<(u8, u16, Backoff, Timeout, u32, u64, u128)> = OneOf::new(Timeout {});
+
+    match o_2.subset::<(Timeout, Backoff), _>().unwrap().to_enum() {
+        E2::A(Timeout {}) => {
+            println!(":)");
+        }
+        E2::B(Backoff {}) => {
+            unreachable!()
         }
     }
 }

@@ -1,11 +1,16 @@
 [package]
 name = "terrors"
-version = "0.2.6"
+version = "0.3.0"
 edition = "2021"
 authors = ["Tyler Neely <tylerneely@gmail.com>"]
 documentation = "https://docs.rs/terrors/"
-description = "type-level error set narrowing"
+description = "ergonomic and precise error handling built atop type-level set arithmetic"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/komora-io/terrors"
-categories = ["error-handling"]
+categories = ["rust-patterns"]
+keywords = ["error", "error-handling", "type-level", "anonymous", "sum"]
 readme = "README.md"
+
+[features]
+error_provide = []
+error_provide_feature = []

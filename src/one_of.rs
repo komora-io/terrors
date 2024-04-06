@@ -5,12 +5,30 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 
 use crate::type_set::{
-    Cons, Contains, DebugFold, DisplayFold, End, ErrorFold, Narrow, SupersetOf, TupleForm, TypeSet,
+    CloneFold, Contains, DebugFold, DisplayFold, ErrorFold, IsFold, Narrow, SupersetOf, TupleForm,
+    TypeSet,
 };
+
+use crate::{Cons, End};
 
 /* ------------------------- OneOf ----------------------- */
 
-/// `OneOf` is similar to anonymous unions / enums in languages that support type narrowing.
+/// `OneOf` is an open sum type. It differs from an enum
+/// in that you do not need to define any actual new type
+/// in order to hold some specific combination of variants,
+/// but rather you simply describe the OneOf as holding
+/// one value out of several specific possibilities,
+/// defined by using a tuple of those possible variants
+/// as the generic parameter for the `OneOf`.
+///
+/// For example, a `OneOf<(String, u32)>` contains either
+/// a `String` or a `u32`. The value over a simple `Result`
+/// or other traditional enum starts to become apparent in larger
+/// codebases where error handling needs to occur in
+/// different places for different errors. `OneOf` allows
+/// you to quickly specify a function's return value as
+/// involving a precise subset of errors that the caller
+/// can clearly reason about.
 pub struct OneOf<E: TypeSet> {
     pub(crate) value: Box<dyn Any>,
     _pd: PhantomData<E>,
@@ -36,33 +54,47 @@ where
     }
 }
 
+impl<E> Clone for OneOf<E>
+where
+    E: TypeSet,
+    E::Variants: Clone + CloneFold,
+{
+    fn clone(&self) -> Self {
+        let value = E::Variants::clone_fold(&self.value);
+
+        OneOf {
+            value,
+            _pd: PhantomData,
+        }
+    }
+}
 impl<E> fmt::Debug for OneOf<E>
 where
     E: TypeSet,
-    E::TList: fmt::Debug + DebugFold,
+    E::Variants: fmt::Debug + DebugFold,
 {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        E::TList::debug_fold(&self.value, formatter)
+        E::Variants::debug_fold(&self.value, formatter)
     }
 }
 
 impl<E> fmt::Display for OneOf<E>
 where
     E: TypeSet,
-    E::TList: fmt::Display + DisplayFold,
+    E::Variants: fmt::Display + DisplayFold,
 {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        E::TList::display_fold(&self.value, formatter)
+        E::Variants::display_fold(&self.value, formatter)
     }
 }
 
 impl<E> Error for OneOf<E>
 where
     E: TypeSet,
-    E::TList: Error + DebugFold + DisplayFold + ErrorFold,
+    E::Variants: Error + DebugFold + DisplayFold + ErrorFold,
 {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        E::TList::source_fold(&self.value)
+        E::Variants::source_fold(&self.value)
     }
 }
 
@@ -70,10 +102,11 @@ impl<E> OneOf<E>
 where
     E: TypeSet,
 {
+    /// Create a new `OneOf`.
     pub fn new<T, Index>(t: T) -> OneOf<E>
     where
         T: Any,
-        E::TList: Contains<T, Index>,
+        E::Variants: Contains<T, Index>,
     {
         OneOf {
             value: Box::new(t),
@@ -81,12 +114,18 @@ where
         }
     }
 
+    /// Attempt to downcast the `OneOf` into a specific type, and
+    /// if that fails, return a `OneOf` which does not contain that
+    /// type as one of its possible variants.
     pub fn narrow<Target, Index>(
         self,
-    ) -> Result<Target, OneOf<<<E::TList as Narrow<Target, Index>>::Remainder as TupleForm>::Tuple>>
+    ) -> Result<
+        Target,
+        OneOf<<<E::Variants as Narrow<Target, Index>>::Remainder as TupleForm>::Tuple>,
+    >
     where
         Target: 'static,
-        E::TList: Narrow<Target, Index>,
+        E::Variants: Narrow<Target, Index>,
     {
         if self.value.is::<Target>() {
             Ok(*self.value.downcast::<Target>().unwrap())
@@ -98,10 +137,13 @@ where
         }
     }
 
+    /// Turns the `OneOf` into a `OneOf` with a set of variants
+    /// which is a superset of the current one. This may also be
+    /// the same set of variants, but in a different order.
     pub fn broaden<Other, Index>(self) -> OneOf<Other>
     where
         Other: TypeSet,
-        Other::TList: SupersetOf<E::TList, Index>,
+        Other::Variants: SupersetOf<E::Variants, Index>,
     {
         OneOf {
             value: self.value,
@@ -109,14 +151,44 @@ where
         }
     }
 
+    /// Attempt to split a subset of variants out of the `OneOf`,
+    /// returning the remainder of possible variants if the value
+    /// does not have one of the `TargetList` types.
+    pub fn subset<TargetList, Index>(
+        self,
+    ) -> Result<
+        OneOf<TargetList>,
+        OneOf<<<E::Variants as SupersetOf<TargetList::Variants, Index>>::Remainder as TupleForm>::Tuple>,
+    >
+    where
+        TargetList: TypeSet,
+        E::Variants: IsFold + SupersetOf<TargetList::Variants, Index>,
+    {
+        if E::Variants::is_fold(&self.value) {
+            Ok(OneOf {
+                value: self.value,
+                _pd: PhantomData,
+            })
+        } else {
+            Err(OneOf {
+                value: self.value,
+                _pd: PhantomData,
+            })
+        }
+    }
+
+    /// For a `OneOf` with a single variant, return
+    /// the contained value.
     pub fn take<Target>(self) -> Target
     where
         Target: 'static,
-        E: TypeSet<TList = Cons<Target, End>>,
+        E: TypeSet<Variants = Cons<Target, End>>,
     {
         *self.value.downcast::<Target>().unwrap()
     }
 
+    /// Convert the `OneOf` to an owned enum for
+    /// use in pattern matching etc...
     pub fn to_enum(self) -> E::Enum
     where
         E::Enum: From<Self>,
@@ -124,6 +196,8 @@ where
         E::Enum::from(self)
     }
 
+    /// Borrow the enum as an enum for use in
+    /// pattern matching etc...
     pub fn as_enum<'a>(&'a self) -> E::EnumRef<'a>
     where
         E::EnumRef<'a>: From<&'a Self>,
