@@ -27,4 +27,8 @@ pub enum End {}
 /// A compile-time list of types, similar to other basic functional list structures.
 #[doc(hidden)]
 #[derive(Debug)]
-pub struct Cons<Head, Tail>(std::marker::PhantomData<Head>, Tail);
+pub struct Cons<Head, Tail>(core::marker::PhantomData<Head>, Tail);
+
+#[doc(hidden)]
+#[derive(Debug)]
+pub struct Recurse<Tail>(Tail);

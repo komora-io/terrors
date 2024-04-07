@@ -1,8 +1,8 @@
-use std::any::Any;
+use core::any::Any;
+use core::fmt;
+use core::marker::PhantomData;
+use core::ops::Deref;
 use std::error::Error;
-use std::fmt;
-use std::marker::PhantomData;
-use std::ops::Deref;
 
 use crate::type_set::{
     CloneFold, Contains, DebugFold, DisplayFold, ErrorFold, IsFold, Narrow, SupersetOf, TupleForm,

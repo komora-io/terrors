@@ -1,9 +1,9 @@
 //! Type-level set inclusion and difference, inspired by frunk's approach: <https://archive.is/YwDMX>
-use std::any::Any;
+use core::any::Any;
+use core::fmt;
 use std::error::Error;
-use std::fmt;
 
-use crate::{Cons, End};
+use crate::{Cons, End, Recurse};
 
 /* ------------------------- std::error::Error support ----------------------- */
 
