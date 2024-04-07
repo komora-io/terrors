@@ -432,7 +432,7 @@ where
 }
 
 /// Recursive case where the search Target is in the Tail of the Variants.
-impl<Head, Tail, Target, Index> Narrow<Target, Cons<Index, ()>> for Cons<Head, Tail>
+impl<Head, Tail, Target, Index> Narrow<Target, Recurse<Index>> for Cons<Head, Tail>
 where
     Tail: Narrow<Target, Index>,
     Tail: TupleForm,
