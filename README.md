@@ -74,7 +74,7 @@ fn retry() -> Result<(), OneOf<(AllocationFailure, RetriesExhausted)>> {
 }
 ```
 
-`OneOf` also implements `Clone`, `Debug`, `Display`, and/or `std::error::Error` if all types in the type set do as well:
+`OneOf` also implements `Clone`, `Debug`, `Display`, `Send`, `Sync` and/or `std::error::Error` if all types in the type set do as well:
 
 ```rust
 use std::error::Error;
