@@ -24,6 +24,8 @@ pub use type_set::{E1, E2, E3, E4, E5, E6, E7, E8, E9};
 #[derive(Debug)]
 pub enum End {}
 
+impl std::error::Error for End {}
+
 /// A compile-time list of types, similar to other basic functional list structures.
 #[doc(hidden)]
 #[derive(Debug)]
