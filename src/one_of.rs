@@ -34,6 +34,18 @@ pub struct OneOf<E: TypeSet> {
     _pd: PhantomData<E>,
 }
 
+fn _send_sync_assert() {
+    fn is_send<T: Send>(_: &T) {}
+    fn is_sync<T: Sync>(_: &T) {}
+
+    let o: OneOf<(usize, String, std::sync::atomic::AtomicUsize)> = OneOf::new(5_usize);
+    is_send(&o);
+    is_sync(&o);
+}
+
+unsafe impl<T> Send for OneOf<T> where T: TypeSet + Send {}
+unsafe impl<T> Sync for OneOf<T> where T: TypeSet + Sync {}
+
 impl<T> Deref for OneOf<(T,)>
 where
     T: 'static,
