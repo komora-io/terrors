@@ -1,7 +1,4 @@
-#![cfg_attr(
-    feature = "error_provide_feature",
-    feature(error_generic_member_access)
-)]
+#![cfg_attr(feature = "error_provide", feature(error_generic_member_access))]
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
 #[doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
