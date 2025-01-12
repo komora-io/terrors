@@ -1,17 +1,20 @@
 //! Type-level set inclusion and difference, inspired by frunk's approach: <https://archive.is/YwDMX>
+#[cfg(feature = "error_provide")]
+use crate::maybe_std::error;
+use crate::maybe_std::error::Error;
+use crate::maybe_std::Box;
 use core::any::Any;
 use core::fmt;
-use std::error::Error;
 
 use crate::{Cons, End, Recurse};
 
-/* ------------------------- std::error::Error support ----------------------- */
+/* ------------------------- Error support ----------------------- */
 
 pub trait ErrorFold {
     fn source_fold(any: &Box<dyn Any>) -> Option<&(dyn Error + 'static)>;
 
     #[cfg(feature = "error_provide")]
-    fn provide_fold<'a>(any: &'a Box<dyn Any>, request: &mut std::error::Request<'a>);
+    fn provide_fold<'a>(any: &'a Box<dyn Any>, request: &mut error::Request<'a>);
 }
 
 impl ErrorFold for End {
@@ -20,7 +23,7 @@ impl ErrorFold for End {
     }
 
     #[cfg(feature = "error_provide")]
-    fn provide_fold<'a>(_: &Box<dyn Any>, _: &mut std::error::Request<'a>) {
+    fn provide_fold<'a>(_: &Box<dyn Any>, _: &mut error::Request<'a>) {
         unreachable!("provide_fold called on End");
     }
 }
@@ -47,7 +50,7 @@ where
     }
 
     #[cfg(feature = "error_provide")]
-    fn provide_fold<'a>(any: &'a Box<dyn Any>, request: &mut std::error::Request<'a>) {
+    fn provide_fold<'a>(any: &'a Box<dyn Any>, request: &mut error::Request<'a>) {
         if let Some(head_ref) = any.downcast_ref::<Head>() {
             head_ref.provide(request)
         } else {
@@ -168,10 +171,12 @@ where
     }
 }
 
-fn _clone_test() {
+#[cfg(test)]
+#[test]
+fn clone_test() {
     fn is_clone<T: Clone>() {}
 
-    type T0 = <(String, u32) as TypeSet>::Variants;
+    type T0 = <(u8, u32) as TypeSet>::Variants;
 
     is_clone::<T0>();
 }
@@ -215,62 +220,92 @@ pub trait TypeSet {
 impl TypeSet for () {
     type Variants = End;
     type Enum = E0;
-    type EnumRef<'a> = E0 where Self: 'a;
+    type EnumRef<'a>
+        = E0
+    where
+        Self: 'a;
 }
 
 impl<A> TypeSet for (A,) {
     type Variants = Cons<A, End>;
     type Enum = E1<A>;
-    type EnumRef<'a> = E1<&'a A> where Self: 'a;
+    type EnumRef<'a>
+        = E1<&'a A>
+    where
+        Self: 'a;
 }
 
 impl<A, B> TypeSet for (A, B) {
     type Variants = Cons<A, Cons<B, End>>;
     type Enum = E2<A, B>;
-    type EnumRef<'a> = E2<&'a A, &'a B> where Self: 'a;
+    type EnumRef<'a>
+        = E2<&'a A, &'a B>
+    where
+        Self: 'a;
 }
 
 impl<A, B, C> TypeSet for (A, B, C) {
     type Variants = Cons<A, Cons<B, Cons<C, End>>>;
     type Enum = E3<A, B, C>;
-    type EnumRef<'a> = E3<&'a A, &'a B, &'a C> where Self: 'a;
+    type EnumRef<'a>
+        = E3<&'a A, &'a B, &'a C>
+    where
+        Self: 'a;
 }
 
 impl<A, B, C, D> TypeSet for (A, B, C, D) {
     type Variants = Cons<A, Cons<B, Cons<C, Cons<D, End>>>>;
     type Enum = E4<A, B, C, D>;
-    type EnumRef<'a> = E4<&'a A, &'a B, &'a C, &'a D> where Self: 'a;
+    type EnumRef<'a>
+        = E4<&'a A, &'a B, &'a C, &'a D>
+    where
+        Self: 'a;
 }
 
 impl<A, B, C, D, E> TypeSet for (A, B, C, D, E) {
     type Variants = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, End>>>>>;
     type Enum = E5<A, B, C, D, E>;
-    type EnumRef<'a> = E5<&'a A, &'a B, &'a C, &'a D, &'a E> where Self: 'a;
+    type EnumRef<'a>
+        = E5<&'a A, &'a B, &'a C, &'a D, &'a E>
+    where
+        Self: 'a;
 }
 
 impl<A, B, C, D, E, F> TypeSet for (A, B, C, D, E, F) {
     type Variants = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, End>>>>>>;
     type Enum = E6<A, B, C, D, E, F>;
-    type EnumRef<'a> = E6<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F> where Self: 'a;
+    type EnumRef<'a>
+        = E6<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F>
+    where
+        Self: 'a;
 }
 
 impl<A, B, C, D, E, F, G> TypeSet for (A, B, C, D, E, F, G) {
     type Variants = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, End>>>>>>>;
     type Enum = E7<A, B, C, D, E, F, G>;
-    type EnumRef<'a> = E7<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F, &'a G> where Self: 'a;
+    type EnumRef<'a>
+        = E7<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F, &'a G>
+    where
+        Self: 'a;
 }
 
 impl<A, B, C, D, E, F, G, H> TypeSet for (A, B, C, D, E, F, G, H) {
     type Variants = Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, End>>>>>>>>;
     type Enum = E8<A, B, C, D, E, F, G, H>;
-    type EnumRef<'a> = E8<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F, &'a G, &'a H> where Self: 'a;
+    type EnumRef<'a>
+        = E8<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F, &'a G, &'a H>
+    where
+        Self: 'a;
 }
 
 impl<A, B, C, D, E, F, G, H, I> TypeSet for (A, B, C, D, E, F, G, H, I) {
     type Variants =
         Cons<A, Cons<B, Cons<C, Cons<D, Cons<E, Cons<F, Cons<G, Cons<H, Cons<I, End>>>>>>>>>;
     type Enum = E9<A, B, C, D, E, F, G, H, I>;
-    type EnumRef<'a> = E9<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F, &'a G, &'a H, &'a I> where Self: 'a;
+    type EnumRef<'a>
+        = E9<&'a A, &'a B, &'a C, &'a D, &'a E, &'a F, &'a G, &'a H, &'a I>
+    where
+        Self: 'a;
 }
 
 /* ------------------------- TupleForm implemented for TypeSet ----------------------- */
@@ -442,17 +477,19 @@ where
     type Remainder = Cons<Head, <Tail as Narrow<Target, Index>>::Remainder>;
 }
 
-fn _narrow_test() {
+#[cfg(test)]
+#[test]
+fn narrow_test() {
     fn can_narrow<Types, Target, Remainder, Index>()
     where
         Types: Narrow<Target, Index, Remainder = Remainder>,
     {
     }
 
-    type T0 = <(u32, String) as TypeSet>::Variants;
+    type T0 = <(u32, u8) as TypeSet>::Variants;
 
     can_narrow::<T0, u32, _, _>();
-    can_narrow::<T0, String, Cons<u32, End>, _>();
+    can_narrow::<T0, u8, Cons<u32, End>, _>();
 }
 
 /* ------------------------- SupersetOf ----------------------- */
@@ -483,7 +520,16 @@ where
         >>::Remainder;
 }
 
-fn _superset_test() {
+#[cfg(test)]
+#[test]
+fn superset_test() {
+    #[cfg(not(feature = "std"))]
+    extern crate alloc;
+    #[cfg(not(feature = "std"))]
+    use alloc::string::String;
+    #[cfg(not(feature = "std"))]
+    use alloc::vec::Vec;
+
     fn is_superset<S1, S2, Remainder, Index>()
     where
         S1: SupersetOf<S2, Index, Remainder = Remainder>,

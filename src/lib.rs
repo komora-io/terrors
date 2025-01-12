@@ -3,11 +3,13 @@
     feature(error_generic_member_access)
 )]
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 #[doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 #[cfg(doctest)]
 pub struct ReadmeDoctests;
 
+mod maybe_std;
 mod one_of;
 mod one_of_to_enum;
 mod type_set;
@@ -24,7 +26,7 @@ pub use type_set::{E1, E2, E3, E4, E5, E6, E7, E8, E9};
 #[derive(Debug)]
 pub enum End {}
 
-impl std::error::Error for End {}
+impl maybe_std::error::Error for End {}
 
 /// A compile-time list of types, similar to other basic functional list structures.
 #[doc(hidden)]
