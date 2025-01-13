@@ -5,6 +5,11 @@ use std::error::Error;
 
 use crate::{Cons, End, Recurse};
 
+#[cfg(feature = "axum")]
+use axum_core::response::IntoResponse;
+#[cfg(feature = "axum")]
+use axum_core::response::Response;
+
 /* ------------------------- std::error::Error support ----------------------- */
 
 pub trait ErrorFold {
@@ -52,6 +57,53 @@ where
             head_ref.provide(request)
         } else {
             Tail::provide_fold(any, request)
+        }
+    }
+}
+
+/* ------------------------- Axum support ----------------------- */
+
+#[cfg(feature = "axum")]
+impl<Head, Tail> IntoResponse for Cons<Head, Tail>
+where
+    Head: IntoResponse,
+    Tail: IntoResponse,
+{
+    fn into_response(self) -> Response {
+        unreachable!("into_response called for Cons which is not constructable")
+    }
+}
+
+#[cfg(feature = "axum")]
+impl IntoResponse for End {
+    fn into_response(self) -> Response {
+        unreachable!("into_response called for an End, which is not constructible.")
+    }
+}
+
+#[cfg(feature = "axum")]
+pub trait ResponseFold {
+    fn response_fold(any: Box<dyn Any>) -> Response;
+}
+
+#[cfg(feature = "axum")]
+impl ResponseFold for End {
+    fn response_fold(_: Box<dyn Any>) -> Response {
+        unreachable!("display_fold called on End");
+    }
+}
+
+#[cfg(feature = "axum")]
+impl<Head, Tail> ResponseFold for Cons<Head, Tail>
+where
+    Cons<Head, Tail>: IntoResponse,
+    Head: 'static + IntoResponse,
+    Tail: ResponseFold,
+{
+    fn response_fold(any: Box<dyn Any>) -> Response {
+        match any.downcast::<Head>() {
+            Ok(head) => head.into_response(),
+            Err(tail) => Tail::response_fold(tail),
         }
     }
 }
