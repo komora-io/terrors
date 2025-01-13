@@ -4,10 +4,17 @@ use core::marker::PhantomData;
 use core::ops::Deref;
 use std::error::Error;
 
+#[cfg(feature = "axum")]
+use crate::type_set::ResponseFold;
 use crate::type_set::{
     CloneFold, Contains, DebugFold, DisplayFold, ErrorFold, IsFold, Narrow, SupersetOf, TupleForm,
     TypeSet,
 };
+#[cfg(feature = "axum")]
+use axum_core::response::IntoResponse;
+
+#[cfg(feature = "axum")]
+use axum_core::response::Response;
 
 use crate::{Cons, End};
 
@@ -101,6 +108,17 @@ where
 {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         E::Variants::display_fold(&self.value, formatter)
+    }
+}
+
+#[cfg(feature = "axum")]
+impl<E> IntoResponse for OneOf<E>
+where
+    E: TypeSet,
+    E::Variants: IntoResponse + ResponseFold,
+{
+    fn into_response(self) -> Response {
+        E::Variants::response_fold(self.value)
     }
 }
 
