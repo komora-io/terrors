@@ -1,8 +1,9 @@
+use crate::maybe_std::error::Error;
+use crate::maybe_std::Box;
 use core::any::Any;
 use core::fmt;
 use core::marker::PhantomData;
 use core::ops::Deref;
-use std::error::Error;
 
 use crate::type_set::{
     CloneFold, Contains, DebugFold, DisplayFold, ErrorFold, IsFold, Narrow, SupersetOf, TupleForm,
@@ -34,14 +35,14 @@ pub struct OneOf<E: TypeSet> {
     _pd: PhantomData<E>,
 }
 
-fn _send_sync_error_assert() {
-    use std::io;
-
+#[cfg(test)]
+#[test]
+fn send_sync_error_assert() {
     fn is_send<T: Send>(_: &T) {}
     fn is_sync<T: Sync>(_: &T) {}
     fn is_error<T: Error>(_: &T) {}
 
-    let o: OneOf<(io::Error,)> = OneOf::new(io::Error::new(io::ErrorKind::Other, "yooo"));
+    let o: OneOf<(core::fmt::Error,)> = OneOf::new(core::fmt::Error);
     is_send(&o);
     is_sync(&o);
     is_error(&o);
